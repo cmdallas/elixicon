@@ -1,2 +1,3 @@
-# elixir-sandbox
-elixir sandcastles
+# ⚗️ Elixicon
+
+Elixir notes and sandcastles
