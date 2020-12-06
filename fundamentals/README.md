@@ -188,6 +188,79 @@ end
 r = %{"login" => "cmdallas", "email" => "wojak@cdalla.dev", "password" => "hugs"}
 ```
 
+## Recursion, Tail Calls and Comprehensions
+
+### How Elixir handles looping
+
+Looping in Elixir is different than mainstream, imperative languages.
+
+`while` and `for` loops arent really provided (at least in the same way).
+
+Looping is done via recursion.
+
+```elixir
+defmodule Sandbox do
+  # stops recursion
+  def print(0), do: :ok
+
+  def print(n) do
+    print(n - 1)
+    IO.puts(n)
+  end
+
+  # stops recursion
+  def sum([]), do: 0
+
+  def sum([h|t]) do
+    h + sum(t)
+  end
+end
+```
+
+When we call to a function a stack push is performed. This consume some memory. When we have very deep recursion we can have stack overflows. This isnt neccessarily a problem because Elixir has tail call optimization. A tail call is when a function calls to another function as the last thing the function does. So in this case, calling the function *does not result in a stack push*. A go-to or jump statement essentially happens. Because of this we dont have to allocate additional stack space for calling to the function. This means the tail call function consumes *no additional memory*.
+
+
+In this example, this function uses a tail call optimization because the last term in the function is to call `loop_forever`
+
+```elixir
+def  loop_forever do
+  loop_forever()
+end
+```
+
+### Builtins that use recursion
+
+```elixir
+Enum.each([1,2,3], fn x -> IO.puts(x) end)
+
+Enum.map([1,2,3], fn x -> 2 * x end)
+
+Enum.filter([1,2,3,4,5], fn x -> rem(x,2) == 1 end)
+
+Enum.reduce([1,2,3,4,5], 0, fn x, y -> x + y end)
+# x = 0, y = 1 => 1
+# x = 1, y = 2 => 3
+# x = 3, y = 3 => 6
+# x = 6, y = 4 => 10
+# x = 10, y = 5 => 15
+```
+
+### Comprehensions
+
+```elixir
+for x <- [1,2,3], do: x * x
+
+# nested comprehension
+# traditionally looks like: for (x) { for (y) {}}
+for x <- [1,2,3], y <- [1,2,3], do: {x, y, x*y}
+
+# putting values into a map using into
+for x <- 1..9, y <- 1..9, into: %{}, do: {{x, y}, x*y}
+
+# using a filter
+for x <- 1..9, y <- 1..9, x < y, into: %{}, do: {{x, y}, x*y}
+```
+
 ## Concurrency Primitives, Processes, and Message Passing
 
 ### Synchronous execution
