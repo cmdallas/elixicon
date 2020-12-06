@@ -105,6 +105,89 @@ Geometry.area({:square, 2})
 Geometry.area({:circle, 2})
 ```
 
+## Guards and Conditional Macros
+
+Guards are an extension of the basic pattern matching mechanism. They allow you to state an additional, broader expectation that must be satisfied.
+
+```elixir
+defmodule Sandbox do
+  def test(x) when Kernel.is_number(x) < 0 do
+    :negative
+  end
+
+  def test(0), do: :zero
+
+  def test(x) when Kernel.is_number(x) > 0 do
+    :positive
+  end
+end
+
+# comparing types:
+# number < atom < reference < fn < port < pid < tuple < map < list < bitstring
+
+# using a lambda instead of overloading
+test = fn
+  x when Kernel.is_number(x) and x < 0 ->
+    :negative
+
+  0 -> :zero
+
+  x when Kernel.is_number(x) and x > 0 ->
+    :positive
+
+end
+```
+
+`cond`
+
+```elixir
+def max(a, b) do
+  cond do
+    # if a is gt b, return a
+    a >= b -> a
+    # *else* return b
+    true -> b
+  end
+end
+```
+
+`case`
+
+```elixir
+def max(a, b) do
+  case a >= b do
+    true -> a
+    false -> b
+    _ -> :error
+  end
+end
+```
+
+`with`
+
+Can help with really gnar case statements
+
+```elixir
+defmodule Sandbox do
+  def extract_user(user) do
+    with {:ok, login} <- extract_login(user),
+         {:ok, email} <- extract_email(user),
+         {:ok, password} <- extract_password(user) do
+      {:ok, %{login: login, email: email, password: password}}
+    end
+  end
+
+  defp extract_login(%{"login" => login}), do: {:ok, login}
+  defp extract_login(_), do: {:error, "login missing"}
+  defp extract_email(%{"email" => email}), do: {:ok, email}
+  defp extract_email(_), do: {:error, "email missing"}
+  defp extract_password(%{"password" => password}), do: {:ok, password}
+  defp extract_password(_), do: {:error, "password missing"}
+end
+
+r = %{"login" => "cmdallas", "email" => "wojak@cdalla.dev", "password" => "hugs"}
+```
+
 ## Concurrency Primitives, Processes, and Message Passing
 
 ### Synchronous execution
