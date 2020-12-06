@@ -1,5 +1,110 @@
 # Fundamentals
 
+## Pattern Matching
+
+The left side of the `=` operator is a pattern. The right side is an expression that evaluates to an Elixir term.
+
+```elixir
+person = {"chris", 29}
+{name, age } = person
+# or
+{name, age} = {"chris", 29}
+
+{date, time} = :calendar.local_time()
+
+# example of a 3 term tuple where the first term is an atom of :rectangle
+rectangle = {:rectangle, 10, 20}
+{:rectangle, width, height} = rectangle
+
+{:square, width, height} = rectangle
+# ** (MatchError) no match of right hand side value: {:rectangle, 10, 20}
+```
+
+It is a common idiom to see `{:ok, result}` or `{:error, result}`
+
+```elixir
+{:ok, contents} = File.read("example.txt")
+# ** (MatchError) no match of right hand side value: {:error, :enoent}
+
+{:error, reason} = File.read("example.txt")
+# {:error, :enoent}
+```
+
+Usuing anonymous variables to pattern match and only get specific values
+
+```elixir
+{_, {hour, _, _}} = :calendar.local_time()
+```
+
+Using the pin operator to prevent a variable from being matched
+
+```elixir
+x = 10
+{^x, _} = {10, "hello"}
+{^x, _} = {11, "hello"}
+# ** (MatchError) no match of right hand side value: {11, "hello"}
+```
+
+Matching lists
+
+```elixir
+[head | tail] = [1,2,3,4,5]
+# iex(11)> head
+# 1
+# iex(12)> tail
+# [2, 3, 4, 5]
+
+[min | _] = Enum.sort([3,5,2,1])
+# iex(14)> min
+# 1
+```
+
+Matching maps
+
+```elixir
+# With maps you can use partial matches
+%{age: age} = %{name: "chris", age: 29}
+```
+
+Chained matches
+
+```elixir
+a = (b = 1 + 6)
+# iex(16)> a
+# 7
+# iex(17)> b
+# 7
+
+# a more useful example
+date_time = {_, {hour, _, _}} = :calendar.local_time()
+```
+
+Function argument pattern matching
+
+```elixir
+defmodule Geometry do
+  def area({:rectangle, a, b}) do
+    a * b
+  end
+
+  def area({:square, a}) do
+    a * a
+  end
+
+  def area({:circle, r}) do
+    r * r * 3.14159
+  end
+
+  def area(unknown) do
+    {:error, {:unknown_shape, unknown}}
+  end
+end
+
+Geometry.area({:rectangle, 2, 5})
+Geometry.area({:square, 2})
+Geometry.area({:circle, 2})
+```
+
 ## Concurrency Primitives, Processes, and Message Passing
 
 ### Synchronous execution
