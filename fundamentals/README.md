@@ -261,6 +261,51 @@ for x <- 1..9, y <- 1..9, into: %{}, do: {{x, y}, x*y}
 for x <- 1..9, y <- 1..9, x < y, into: %{}, do: {{x, y}, x*y}
 ```
 
+## Data Abstraction, Function Pipelines and Structs
+
+Modules should be stateless.
+The main data abstraction should be the first arg of the function.
+
+```elixir
+defmodule TaskList do
+  def new(), do: %{}
+
+  def add_task(task_list, entry) do
+    MultiStorage.add(task_list, entry.date, entry)
+  end
+
+  def get_tasks(task_list, date) do
+    MultiStorage.get(task_list, date)
+  end
+end
+
+defmodule MultiStorage do
+  def new(), do: %{}
+
+  def add(storage, date, body) do
+    Map.update(
+      storage,
+      date,
+      [body],
+      fn tasks -> [body|tasks] end
+    )
+  end
+
+  def get(storage, key) do
+    Map.get(storage, key [])
+  end
+end
+
+
+entry = %{date: ~D[2020-12-10]}, task: "Buy Bitcoin"}
+task_list = TaskList.new() |> TaskList.add_task(entry)
+TaskList.get_tasks(entry.date)
+```
+
+You can only have 1 struct per module and it is bound to the module.
+
+You cannot call Enum functions on a struct. You could, however do something like: `x |> Map.to_list()`
+
 ## Concurrency Primitives, Processes, and Message Passing
 
 ### Synchronous execution
